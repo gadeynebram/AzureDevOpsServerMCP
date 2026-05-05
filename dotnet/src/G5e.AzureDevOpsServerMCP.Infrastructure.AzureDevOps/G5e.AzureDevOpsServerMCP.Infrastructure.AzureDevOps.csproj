@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.TeamFoundationServer.Client" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" />
     <PackageReference Include="System.Configuration.ConfigurationManager" />
+  <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 
 </Project>
