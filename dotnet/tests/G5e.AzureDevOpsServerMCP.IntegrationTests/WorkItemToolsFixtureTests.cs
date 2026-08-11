@@ -1,12 +1,14 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using G5e.AzureDevOpsServerMCP.Application.Services;
 using G5e.AzureDevOpsServerMCP.Tools;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace G5e.AzureDevOpsServerMCP.IntegrationTests;
 
+[TestClass]
 public class WorkItemToolsFixtureTests
 {
-    [Fact]
+    [TestMethod]
     public async Task GetWorkItemContext_UsesFixtureBackedService_AndSerializesExpectedShape()
     {
         var fixturePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "work-item-context-result.json");
@@ -20,17 +22,17 @@ public class WorkItemToolsFixtureTests
         var workItem = root.GetProperty("workItem");
         var comments = root.GetProperty("comments");
 
-        Assert.Equal(1, workItem.GetProperty("id").GetInt32());
-        Assert.Equal("Als ontwikkelaar wil ik work items ophalen via een MCP server zodat mijn AI-assistent context heeft over mijn taken", workItem.GetProperty("title").GetString());
-        Assert.Equal("User Story", workItem.GetProperty("type").GetString());
-        Assert.Equal("New", workItem.GetProperty("state").GetString());
-        Assert.Equal("Gadeyne Bram", workItem.GetProperty("assignedTo").GetString());
-        Assert.Equal(1, root.GetProperty("commentCount").GetInt32());
-        Assert.Equal(1, comments.GetArrayLength());
-        Assert.Contains("Spike afgerond", comments[0].GetProperty("content").GetString(), StringComparison.OrdinalIgnoreCase);
+        Assert.AreEqual(1, workItem.GetProperty("id").GetInt32());
+        Assert.AreEqual("Als ontwikkelaar wil ik work items ophalen via een MCP server zodat mijn AI-assistent context heeft over mijn taken", workItem.GetProperty("title").GetString());
+        Assert.AreEqual("User Story", workItem.GetProperty("type").GetString());
+        Assert.AreEqual("New", workItem.GetProperty("state").GetString());
+        Assert.AreEqual("Gadeyne Bram", workItem.GetProperty("assignedTo").GetString());
+        Assert.AreEqual(1, root.GetProperty("commentCount").GetInt32());
+        Assert.AreEqual(1, comments.GetArrayLength());
+        StringAssert.Contains(comments[0].GetProperty("content").GetString(), "Spike afgerond", StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task GetWorkItemContext_WhenServiceThrows_ReturnsSerializedError()
     {
         var sut = new WorkItemTools(new ThrowingWorkItemContextService(new InvalidOperationException("fixture failure")));
@@ -40,8 +42,8 @@ public class WorkItemToolsFixtureTests
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
 
-        Assert.Equal("fixture failure", root.GetProperty("error").GetString());
-        Assert.Equal("InvalidOperationException", root.GetProperty("type").GetString());
+        Assert.AreEqual("fixture failure", root.GetProperty("error").GetString());
+        Assert.AreEqual("InvalidOperationException", root.GetProperty("type").GetString());
     }
 
     private sealed class FixtureBackedWorkItemContextService : IWorkItemContextService
@@ -98,7 +100,7 @@ public class WorkItemToolsFixtureTests
             => Task.FromException<CreateWorkItemResult>(_exception);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task AddWorkItemComment_ReturnsSerializedCommentId()
     {
         var sut = new WorkItemTools(new FakeAddCommentWorkItemContextService());
@@ -108,11 +110,11 @@ public class WorkItemToolsFixtureTests
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
 
-        Assert.Equal(42, root.GetProperty("commentId").GetInt32());
-        Assert.True(root.GetProperty("success").GetBoolean());
+        Assert.AreEqual(42, root.GetProperty("commentId").GetInt32());
+        Assert.IsTrue(root.GetProperty("success").GetBoolean());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task AddWorkItemComment_WhenServiceThrows_ReturnsSerializedError()
     {
         var sut = new WorkItemTools(new ThrowingWorkItemContextService(new InvalidOperationException("comment failed")));
@@ -122,8 +124,8 @@ public class WorkItemToolsFixtureTests
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
 
-        Assert.Equal("comment failed", root.GetProperty("error").GetString());
-        Assert.Equal("InvalidOperationException", root.GetProperty("type").GetString());
+        Assert.AreEqual("comment failed", root.GetProperty("error").GetString());
+        Assert.AreEqual("InvalidOperationException", root.GetProperty("type").GetString());
     }
 
     private sealed class FakeAddCommentWorkItemContextService : IWorkItemContextService
@@ -141,7 +143,7 @@ public class WorkItemToolsFixtureTests
             => Task.FromResult(new CreateWorkItemResult { WorkItemId = 3, Title = title, Type = workItemType, Url = string.Empty });
     }
 
-    [Fact]
+    [TestMethod]
     public async Task UpdateWorkItemComment_ReturnsSerializedCommentDetails()
     {
         var sut = new WorkItemTools(new FakeAddCommentWorkItemContextService());
@@ -151,14 +153,14 @@ public class WorkItemToolsFixtureTests
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
 
-        Assert.Equal(100, root.GetProperty("commentId").GetInt32());
-        Assert.Equal(1, root.GetProperty("workItemId").GetInt32());
-        Assert.Equal("Updated comment text via MCP", root.GetProperty("text").GetString());
-        Assert.Equal(2, root.GetProperty("version").GetInt32());
-        Assert.True(root.GetProperty("success").GetBoolean());
+        Assert.AreEqual(100, root.GetProperty("commentId").GetInt32());
+        Assert.AreEqual(1, root.GetProperty("workItemId").GetInt32());
+        Assert.AreEqual("Updated comment text via MCP", root.GetProperty("text").GetString());
+        Assert.AreEqual(2, root.GetProperty("version").GetInt32());
+        Assert.IsTrue(root.GetProperty("success").GetBoolean());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task UpdateWorkItemComment_WhenServiceThrows_ReturnsSerializedError()
     {
         var sut = new WorkItemTools(new ThrowingWorkItemContextService(new InvalidOperationException("update failed")));
@@ -168,45 +170,45 @@ public class WorkItemToolsFixtureTests
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
 
-        Assert.Equal("update failed", root.GetProperty("error").GetString());
-        Assert.Equal("InvalidOperationException", root.GetProperty("type").GetString());
+        Assert.AreEqual("update failed", root.GetProperty("error").GetString());
+        Assert.AreEqual("InvalidOperationException", root.GetProperty("type").GetString());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task CreateWorkItem_ReturnsSerializedWorkItemDetails()
     {
         var sut = new WorkItemTools(new FakeCreateWorkItemService());
         var json = await sut.CreateWorkItem("DefaultCollection", "UZG.IZ.PrestIZ", "Task", "New task via MCP");
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
-        Assert.Equal(99, root.GetProperty("workItemId").GetInt32());
-        Assert.Equal("New task via MCP", root.GetProperty("title").GetString());
-        Assert.Equal("Task", root.GetProperty("type").GetString());
-        Assert.True(root.GetProperty("success").GetBoolean());
+        Assert.AreEqual(99, root.GetProperty("workItemId").GetInt32());
+        Assert.AreEqual("New task via MCP", root.GetProperty("title").GetString());
+        Assert.AreEqual("Task", root.GetProperty("type").GetString());
+        Assert.IsTrue(root.GetProperty("success").GetBoolean());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task CreateWorkItem_WithDescription_ReturnsSerializedWorkItem()
     {
         var sut = new WorkItemTools(new FakeCreateWorkItemService());
         var json = await sut.CreateWorkItem("DefaultCollection", "UZG.IZ.PrestIZ", "Bug", "Critical bug", "This is a critical issue that needs fixing");
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
-        Assert.Equal(99, root.GetProperty("workItemId").GetInt32());
-        Assert.Equal("Critical bug", root.GetProperty("title").GetString());
-        Assert.Equal("Bug", root.GetProperty("type").GetString());
-        Assert.True(root.GetProperty("success").GetBoolean());
+        Assert.AreEqual(99, root.GetProperty("workItemId").GetInt32());
+        Assert.AreEqual("Critical bug", root.GetProperty("title").GetString());
+        Assert.AreEqual("Bug", root.GetProperty("type").GetString());
+        Assert.IsTrue(root.GetProperty("success").GetBoolean());
     }
 
-    [Fact]
+    [TestMethod]
     public async Task CreateWorkItem_WhenServiceThrows_ReturnsSerializedError()
     {
         var sut = new WorkItemTools(new ThrowingWorkItemContextService(new InvalidOperationException("Invalid work item type")));
         var json = await sut.CreateWorkItem("DefaultCollection", "UZG.IZ.PrestIZ", "InvalidType", "Test");
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
-        Assert.Equal("Invalid work item type", root.GetProperty("error").GetString());
-        Assert.Equal("InvalidOperationException", root.GetProperty("type").GetString());
+        Assert.AreEqual("Invalid work item type", root.GetProperty("error").GetString());
+        Assert.AreEqual("InvalidOperationException", root.GetProperty("type").GetString());
     }
 
     private sealed class FakeCreateWorkItemService : IWorkItemContextService
