@@ -3,7 +3,12 @@
   <PropertyGroup>
     <PackageId>G5e.AzureDevOpsServerMCP.Application</PackageId>
     <Description>Application contracts and result models for the G5e Azure DevOps Server MCP packages.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\G5e.AzureDevOpsServerMCP.Domain\G5e.AzureDevOpsServerMCP.Domain.csproj" />

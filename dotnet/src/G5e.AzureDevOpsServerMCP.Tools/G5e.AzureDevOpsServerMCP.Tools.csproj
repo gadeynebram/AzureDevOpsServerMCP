@@ -3,7 +3,12 @@
   <PropertyGroup>
     <PackageId>G5e.AzureDevOpsServerMCP.Tools</PackageId>
     <Description>MCP tool implementations for the G5e Azure DevOps Server MCP packages.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\G5e.AzureDevOpsServerMCP.Application\G5e.AzureDevOpsServerMCP.Application.csproj" />
