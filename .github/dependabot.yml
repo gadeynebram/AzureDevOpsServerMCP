@@ -26,3 +26,8 @@ updates:
           - "xunit.*"
           - "coverlet"
           - "coverlet.*"
+    cooldown:
+      default-days: 8
+      semver-major-days: 15
+      semver-minor-days: 10
+      semver-patch-days: 8
