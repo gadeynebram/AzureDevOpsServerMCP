@@ -5,7 +5,7 @@
   <ItemGroup>
     <!-- Testing packages -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
-    <PackageVersion Include="MSTest.TestFramework" Version="3.8.2" />
+    <PackageVersion Include="MSTest.TestFramework" Version="4.3.2" />
     <PackageVersion Include="MSTest.TestAdapter" Version="3.8.2" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
   </ItemGroup>
