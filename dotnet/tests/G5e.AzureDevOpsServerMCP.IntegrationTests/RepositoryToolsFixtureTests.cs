@@ -51,6 +51,7 @@ public class RepositoryToolsFixtureTests
         var sut = new RepositoryTools(new FakeRepositoryService());
 
         var json = await sut.CreatePullRequestForWorkItem(
+            "create",
             "DefaultCollection",
             "TestProject",
             "TestRepo",
@@ -75,6 +76,7 @@ public class RepositoryToolsFixtureTests
         var sut = new RepositoryTools(new ThrowingRepositoryService(new InvalidOperationException("source branch not found")));
 
         var json = await sut.CreatePullRequestForWorkItem(
+            "create",
             "DefaultCollection",
             "TestProject",
             "TestRepo",
@@ -92,33 +94,65 @@ public class RepositoryToolsFixtureTests
     }
 
     [TestMethod]
-    public async Task LinkBranchToWorkItem_ReturnsSerializedResult()
+    public async Task LinkArtifactToWorkItem_Branch_ReturnsSerializedResult()
     {
         var sut = new RepositoryTools(new FakeRepositoryService());
 
-        var json = await sut.LinkBranchToWorkItem("DefaultCollection", "TestProject", "TestRepo", "feature/TEST-123", 42);
+        var json = await sut.LinkArtifactToWorkItem("add_artifact_link", "branch", "feature/TEST-123", "DefaultCollection", "TestProject", 42, "TestRepo");
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
 
         Assert.AreEqual(42, root.GetProperty("workItemId").GetInt32());
-        Assert.AreEqual("feature/TEST-123", root.GetProperty("branchName").GetString());
-        Assert.AreEqual("TestRepo", root.GetProperty("repository").GetString());
+        Assert.AreEqual("branch", root.GetProperty("linkType").GetString());
+        Assert.AreEqual("feature/TEST-123", root.GetProperty("linkTarget").GetString());
         Assert.IsTrue(root.GetProperty("success").GetBoolean());
     }
 
     [TestMethod]
-    public async Task LinkBranchToWorkItem_WhenServiceThrows_ReturnsSerializedError()
+    public async Task LinkArtifactToWorkItem_WhenServiceThrows_ReturnsSerializedError()
     {
         var sut = new RepositoryTools(new ThrowingRepositoryService(new InvalidOperationException("repository not found")));
 
-        var json = await sut.LinkBranchToWorkItem("DefaultCollection", "TestProject", "TestRepo", "feature/TEST-123", 42);
+        var json = await sut.LinkArtifactToWorkItem("add_artifact_link", "branch", "feature/TEST-123", "DefaultCollection", "TestProject", 42, "TestRepo");
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
 
         Assert.AreEqual("repository not found", root.GetProperty("error").GetString());
         Assert.AreEqual("InvalidOperationException", root.GetProperty("type").GetString());
+    }
+
+    [TestMethod]
+    public async Task LinkArtifactToWorkItem_Commit_ReturnsSerializedResult()
+    {
+        var sut = new RepositoryTools(new FakeRepositoryService());
+
+        var json = await sut.LinkArtifactToWorkItem("add_artifact_link", "commit", "abc123def456", "DefaultCollection", "TestProject", 42, "TestRepo");
+
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        Assert.AreEqual(42, root.GetProperty("workItemId").GetInt32());
+        Assert.AreEqual("commit", root.GetProperty("linkType").GetString());
+        Assert.AreEqual("abc123def456", root.GetProperty("linkTarget").GetString());
+        Assert.IsTrue(root.GetProperty("success").GetBoolean());
+    }
+
+    [TestMethod]
+    public async Task LinkArtifactToWorkItem_Hyperlink_ReturnsSerializedResult()
+    {
+        var sut = new RepositoryTools(new FakeRepositoryService());
+
+        var json = await sut.LinkArtifactToWorkItem("add_artifact_link", "hyperlink", "https://example.invalid/docs/spec", "DefaultCollection", "TestProject", 42);
+
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        Assert.AreEqual(42, root.GetProperty("workItemId").GetInt32());
+        Assert.AreEqual("hyperlink", root.GetProperty("linkType").GetString());
+        Assert.AreEqual("https://example.invalid/docs/spec", root.GetProperty("linkTarget").GetString());
+        Assert.IsTrue(root.GetProperty("success").GetBoolean());
     }
 
     private sealed class FakeRepositoryService : IRepositoryService
@@ -153,6 +187,21 @@ public class RepositoryToolsFixtureTests
                 WorkItemId = workItemId,
                 BranchName = branchName,
                 Repository = repository
+            });
+
+        public Task<LinkArtifactResult> LinkArtifactToWorkItemAsync(
+            string collection,
+            string project,
+            string? repository,
+            ArtifactLinkType type,
+            string linkTarget,
+            int workItemId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(new LinkArtifactResult
+            {
+                WorkItemId = workItemId,
+                LinkType = type.ToString().ToLowerInvariant(),
+                LinkTarget = linkTarget
             });
 
         public Task<CreatePullRequestResult> CreatePullRequestAsync(
@@ -200,6 +249,16 @@ public class RepositoryToolsFixtureTests
             int workItemId,
             CancellationToken cancellationToken = default)
             => Task.FromException<LinkBranchResult>(_exception);
+
+        public Task<LinkArtifactResult> LinkArtifactToWorkItemAsync(
+            string collection,
+            string project,
+            string? repository,
+            ArtifactLinkType type,
+            string linkTarget,
+            int workItemId,
+            CancellationToken cancellationToken = default)
+            => Task.FromException<LinkArtifactResult>(_exception);
 
         public Task<CreatePullRequestResult> CreatePullRequestAsync(
             string collection,

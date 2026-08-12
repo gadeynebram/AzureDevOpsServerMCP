@@ -7,22 +7,22 @@ This matrix compares capabilities from the original Azure DevOps MCP Server with
 - Upstream source: [docs/TOOLSET.md](docs/TOOLSET.md)
 - Fork implementation: [dotnet](dotnet)
 
-| Capability | Upstream equivalent (toolset) | Fork tool | Status |
-| --- | --- | --- | --- |
-| Get work item context (details + comments) | `mcp_ado_wit_get_work_item`, `mcp_ado_wit_list_work_item_comments` | `wit_get_work_item` | Implemented |
-| Create work item | `mcp_ado_wit_create_work_item` | `wit_work_item_write_create` | Implemented |
-| Add comment to work item | `mcp_ado_wit_add_work_item_comment` | `wit_add_work_item_comment` | Implemented |
-| Update comment on work item | `mcp_ado_wit_update_work_item_comment` | `wit_update_work_item_comment` | Implemented |
-| Create feature branch | `mcp_ado_repo_create_branch` | `repo_create_branch` | Implemented |
-| Link branch to work item (artifact link) | `mcp_ado_wit_add_artifact_link` | `wit_add_artifact_link` | Implemented |
-| Create pull request and link to work item | `mcp_ado_repo_create_pull_request`, `mcp_ado_wit_link_work_item_to_pull_request` | `repo_create_pull_request` | Implemented |
-| Pipelines | `mcp_ado_pipelines_*` | - | Not implemented |
-| Wiki | `mcp_ado_wiki_*` | - | Not implemented |
-| Search | `mcp_ado_search_*` | - | Not implemented |
-| Test Plans | `mcp_ado_testplan_*` | - | Not implemented |
-| Advanced Security | `mcp_ado_advsec_*` | - | Not implemented |
-| Core (projects/teams/identity) | `mcp_ado_core_*` | - | Not implemented |
-| Work (iterations/capacity/settings) | `mcp_ado_work_*` | - | Not implemented |
+| Capability | Upstream tool (post-consolidation) | Fork tool | Implemented actions | Status |
+| --- | --- | --- | --- | --- |
+| Get work item context (details + comments) | `wit_work_item` | `wit_work_item` | `action=get` | Implemented |
+| Create work item | `wit_work_item_write` | `wit_work_item_write` | `action=create` | Implemented |
+| Add comment to work item | `wit_work_item_comment_write` | `wit_work_item_comment_write` | `action=add` | Implemented |
+| Update comment on work item | `wit_work_item_comment_write` | `wit_work_item_comment_write` | `action=update` | Implemented |
+| Create feature branch | `repo_create_branch` | `repo_create_branch` | — | Implemented |
+| Link artifact to work item (branch, commit, hyperlink) | `wit_work_item_link_write` | `wit_work_item_link_write` | `action=add_artifact_link`, types: `branch`, `commit`, `hyperlink` | Implemented |
+| Create pull request and link to work item | `repo_pull_request_write` | `repo_pull_request_write` | `action=create` | Implemented |
+| Pipelines | `pipelines_*` | - | - | Not implemented |
+| Wiki | `wiki_*` | - | - | Not implemented |
+| Search | `search_*` | - | - | Not implemented |
+| Test Plans | `testplan_*` | - | - | Not implemented |
+| Advanced Security | `advsec_*` | - | - | Not implemented |
+| Core (projects/teams/identity) | `core_*` | - | - | Not implemented |
+| Work (iterations/capacity/settings) | `work_*` | - | - | Not implemented |
 
 ## Notes
 

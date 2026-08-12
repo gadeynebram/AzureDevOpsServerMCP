@@ -203,6 +203,72 @@ public class AzureDevOpsRepositoryService : IRepositoryService
         };
     }
 
+    public async Task<LinkArtifactResult> LinkArtifactToWorkItemAsync(
+        string collection,
+        string project,
+        string? repository,
+        ArtifactLinkType type,
+        string linkTarget,
+        int workItemId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(collection))
+            throw new ArgumentException("Collection cannot be empty", nameof(collection));
+        if (string.IsNullOrWhiteSpace(project))
+            throw new ArgumentException("Project cannot be empty", nameof(project));
+        if (workItemId <= 0)
+            throw new ArgumentException("Work item ID must be positive", nameof(workItemId));
+        if (string.IsNullOrWhiteSpace(linkTarget))
+            throw new ArgumentException("Link target cannot be empty", nameof(linkTarget));
+
+        using var connection = _connectionFactory.CreateConnection(collection);
+        var witClient = connection.GetClient<WorkItemTrackingHttpClient>();
+
+        string rel;
+        string url;
+        string attributeName;
+
+        if (type == ArtifactLinkType.Hyperlink)
+        {
+            rel = "Hyperlink";
+            url = linkTarget;
+            attributeName = "Hyperlink";
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(repository))
+                throw new ArgumentException("Repository cannot be empty for Branch and Commit link types", nameof(repository));
+
+            var gitClient = connection.GetClient<GitHttpClient>();
+            var repo = await gitClient.GetRepositoryAsync(project, repository, cancellationToken: cancellationToken);
+
+            rel = "ArtifactLink";
+            attributeName = type == ArtifactLinkType.Branch ? "Branch" : "Fixed in Changeset";
+            url = type == ArtifactLinkType.Branch
+                ? $"vstfs:///Git/Ref/{repo.ProjectReference.Id}/{repo.Id}/GB{Uri.EscapeDataString(linkTarget)}"
+                : $"vstfs:///Git/Commit/{repo.ProjectReference.Id}/{repo.Id}/{Uri.EscapeDataString(linkTarget)}";
+        }
+
+        var patchDocument = new JsonPatchDocument
+        {
+            new JsonPatchOperation
+            {
+                Operation = Operation.Add,
+                Path = "/relations/-",
+                Value = new { rel, url, attributes = new { name = attributeName } }
+            }
+        };
+
+        await witClient.UpdateWorkItemAsync(patchDocument, workItemId, cancellationToken: cancellationToken);
+
+        return new LinkArtifactResult
+        {
+            WorkItemId = workItemId,
+            LinkType = type.ToString().ToLowerInvariant(),
+            LinkTarget = linkTarget
+        };
+    }
+
     private string? GetHeaderValue(string headerName)
     {
         var headers = _httpContextAccessor.HttpContext?.Request?.Headers;

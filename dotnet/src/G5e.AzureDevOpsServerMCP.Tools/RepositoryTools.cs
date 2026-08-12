@@ -52,27 +52,33 @@ public class RepositoryTools
     }
 
     /// <summary>
-    /// Links a branch to a work item as an artifact link.
+    /// Adds an artifact link to a work item.
     /// </summary>
+    /// <param name="action">The action to perform. Supported value: add_artifact_link</param>
+    /// <param name="type">The artifact type: branch, commit, or hyperlink</param>
+    /// <param name="linkTarget">The branch name, commit SHA, or URL to link</param>
     /// <param name="collection">The Azure DevOps collection name</param>
     /// <param name="project">The Azure DevOps project name</param>
-    /// <param name="repository">The repository name</param>
-    /// <param name="branchName">The branch name to link (e.g., "feature/TASK-123")</param>
     /// <param name="workItemId">The work item ID to link to</param>
+    /// <param name="repository">The repository name; required for branch and commit types</param>
     /// <returns>JSON object confirming the link was created</returns>
-    [McpServerTool(Name = "wit_add_artifact_link")]
-    [Description("Links a Git branch to a work item as an artifact relationship.")]
-    public async Task<string> LinkBranchToWorkItem(string collection, string project, string repository, string branchName, int workItemId)
+    [McpServerTool(Name = "wit_work_item_link_write")]
+    [Description("Add an artifact link to a work item. Supported action: add_artifact_link. Supported types: branch (link a Git branch, requires repository), commit (link a commit SHA, requires repository), hyperlink (link any URL).")]
+    public async Task<string> LinkArtifactToWorkItem(string action, string type, string linkTarget, string collection, string project, int workItemId, string? repository = null)
     {
+        if (action != "add_artifact_link")
+            return JsonSerializer.Serialize(new { error = $"Unsupported action '{action}'. Use 'add_artifact_link'." });
+        if (!Enum.TryParse<ArtifactLinkType>(type, ignoreCase: true, out var linkType))
+            return JsonSerializer.Serialize(new { error = $"Unsupported type '{type}'. Use 'branch', 'commit', or 'hyperlink'." });
         try
         {
-            var result = await _repositoryService.LinkBranchToWorkItemAsync(collection, project, repository, branchName, workItemId);
+            var result = await _repositoryService.LinkArtifactToWorkItemAsync(collection, project, repository, linkType, linkTarget, workItemId);
 
             return JsonSerializer.Serialize(new
             {
                 workItemId = result.WorkItemId,
-                branchName = result.BranchName,
-                repository = result.Repository,
+                linkType = result.LinkType,
+                linkTarget = result.LinkTarget,
                 success = true
             }, new JsonSerializerOptions { WriteIndented = true });
         }
@@ -85,6 +91,7 @@ public class RepositoryTools
     /// <summary>
     /// Creates a pull request and links it to a work item.
     /// </summary>
+    /// <param name="action">The action to perform. Supported value: create</param>
     /// <param name="collection">The Azure DevOps collection name</param>
     /// <param name="project">The Azure DevOps project name</param>
     /// <param name="repository">The repository name</param>
@@ -94,10 +101,12 @@ public class RepositoryTools
     /// <param name="workItemId">The work item ID to link to</param>
     /// <param name="description">Optional pull request description in Markdown format</param>
     /// <returns>JSON object with pull request details</returns>
-    [McpServerTool(Name = "repo_create_pull_request")]
-    [Description("Creates a pull request in a Git repository and links it to a work item.")]
-    public async Task<string> CreatePullRequestForWorkItem(string collection, string project, string repository, string sourceBranch, string targetBranch, string title, int workItemId, string? description = null)
+    [McpServerTool(Name = "repo_pull_request_write")]
+    [Description("Write pull request data. Supported action: create (creates a pull request and links it to a work item).")]
+    public async Task<string> CreatePullRequestForWorkItem(string action, string collection, string project, string repository, string sourceBranch, string targetBranch, string title, int workItemId, string? description = null)
     {
+        if (action != "create")
+            return JsonSerializer.Serialize(new { error = $"Unsupported action '{action}'. Use 'create'." });
         try
         {
             var result = await _repositoryService.CreatePullRequestAsync(collection, project, repository, sourceBranch, targetBranch, title, description, workItemId);

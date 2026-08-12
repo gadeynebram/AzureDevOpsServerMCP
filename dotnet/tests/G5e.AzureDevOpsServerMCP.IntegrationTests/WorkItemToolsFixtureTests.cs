@@ -15,7 +15,7 @@ public class WorkItemToolsFixtureTests
         var service = new FixtureBackedWorkItemContextService(fixturePath);
         var sut = new WorkItemTools(service);
 
-        var json = await sut.GetWorkItemContext("DefaultCollection", "UZG.IZ.PrestIZ", 1);
+        var json = await sut.GetWorkItemContext("get", "DefaultCollection", "UZG.IZ.PrestIZ", 1);
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
@@ -37,7 +37,7 @@ public class WorkItemToolsFixtureTests
     {
         var sut = new WorkItemTools(new ThrowingWorkItemContextService(new InvalidOperationException("fixture failure")));
 
-        var json = await sut.GetWorkItemContext("DefaultCollection", "UZG.IZ.PrestIZ", 1);
+        var json = await sut.GetWorkItemContext("get", "DefaultCollection", "UZG.IZ.PrestIZ", 1);
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
@@ -105,7 +105,7 @@ public class WorkItemToolsFixtureTests
     {
         var sut = new WorkItemTools(new FakeAddCommentWorkItemContextService());
 
-        var json = await sut.AddWorkItemComment("DefaultCollection", "UZG.IZ.PrestIZ", 1, "Test comment via MCP");
+        var json = await sut.CommentWrite("add", "DefaultCollection", "UZG.IZ.PrestIZ", 1, "Test comment via MCP");
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
@@ -119,7 +119,7 @@ public class WorkItemToolsFixtureTests
     {
         var sut = new WorkItemTools(new ThrowingWorkItemContextService(new InvalidOperationException("comment failed")));
 
-        var json = await sut.AddWorkItemComment("DefaultCollection", "UZG.IZ.PrestIZ", 1, "Test comment");
+        var json = await sut.CommentWrite("add", "DefaultCollection", "UZG.IZ.PrestIZ", 1, "Test comment");
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
@@ -148,7 +148,7 @@ public class WorkItemToolsFixtureTests
     {
         var sut = new WorkItemTools(new FakeAddCommentWorkItemContextService());
 
-        var json = await sut.UpdateWorkItemComment("DefaultCollection", "UZG.IZ.PrestIZ", 1, 100, "Updated comment text via MCP");
+        var json = await sut.CommentWrite("update", "DefaultCollection", "UZG.IZ.PrestIZ", 1, "Updated comment text via MCP", 100);
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
@@ -165,7 +165,7 @@ public class WorkItemToolsFixtureTests
     {
         var sut = new WorkItemTools(new ThrowingWorkItemContextService(new InvalidOperationException("update failed")));
 
-        var json = await sut.UpdateWorkItemComment("DefaultCollection", "UZG.IZ.PrestIZ", 1, 100, "Updated text");
+        var json = await sut.CommentWrite("update", "DefaultCollection", "UZG.IZ.PrestIZ", 1, "Updated text", 100);
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
@@ -178,7 +178,7 @@ public class WorkItemToolsFixtureTests
     public async Task CreateWorkItem_ReturnsSerializedWorkItemDetails()
     {
         var sut = new WorkItemTools(new FakeCreateWorkItemService());
-        var json = await sut.CreateWorkItem("DefaultCollection", "UZG.IZ.PrestIZ", "Task", "New task via MCP");
+        var json = await sut.CreateWorkItem("create", "DefaultCollection", "UZG.IZ.PrestIZ", "Task", "New task via MCP");
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
         Assert.AreEqual(99, root.GetProperty("workItemId").GetInt32());
@@ -191,7 +191,7 @@ public class WorkItemToolsFixtureTests
     public async Task CreateWorkItem_WithDescription_ReturnsSerializedWorkItem()
     {
         var sut = new WorkItemTools(new FakeCreateWorkItemService());
-        var json = await sut.CreateWorkItem("DefaultCollection", "UZG.IZ.PrestIZ", "Bug", "Critical bug", "This is a critical issue that needs fixing");
+        var json = await sut.CreateWorkItem("create", "DefaultCollection", "UZG.IZ.PrestIZ", "Bug", "Critical bug", "This is a critical issue that needs fixing");
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
         Assert.AreEqual(99, root.GetProperty("workItemId").GetInt32());
@@ -204,7 +204,7 @@ public class WorkItemToolsFixtureTests
     public async Task CreateWorkItem_WhenServiceThrows_ReturnsSerializedError()
     {
         var sut = new WorkItemTools(new ThrowingWorkItemContextService(new InvalidOperationException("Invalid work item type")));
-        var json = await sut.CreateWorkItem("DefaultCollection", "UZG.IZ.PrestIZ", "InvalidType", "Test");
+        var json = await sut.CreateWorkItem("create", "DefaultCollection", "UZG.IZ.PrestIZ", "InvalidType", "Test");
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
         Assert.AreEqual("Invalid work item type", root.GetProperty("error").GetString());

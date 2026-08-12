@@ -31,6 +31,15 @@ public class CreatePullRequestResult
     public string Status { get; set; } = string.Empty;
 }
 
+public enum ArtifactLinkType { Branch, Commit, Hyperlink }
+
+public class LinkArtifactResult
+{
+    public int WorkItemId { get; set; }
+    public string LinkType { get; set; } = string.Empty;
+    public string LinkTarget { get; set; } = string.Empty;
+}
+
 /// <summary>
 /// Service for repository operations on Azure DevOps.
 /// </summary>
@@ -91,6 +100,15 @@ public interface IRepositoryService
         string targetBranch,
         string title,
         string? description,
+        int workItemId,
+        CancellationToken cancellationToken = default);
+
+    Task<LinkArtifactResult> LinkArtifactToWorkItemAsync(
+        string collection,
+        string project,
+        string? repository,
+        ArtifactLinkType type,
+        string linkTarget,
         int workItemId,
         CancellationToken cancellationToken = default);
 }
