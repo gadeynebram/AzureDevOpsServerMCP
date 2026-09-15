@@ -69,7 +69,7 @@ public class WorkItemTools
     /// <param name="collection">The Azure DevOps collection name</param>
     /// <param name="project">The Azure DevOps project name or ID</param>
     /// <param name="workItemId">The numeric work item ID</param>
-    /// <param name="comment">The comment content to add. Azure DevOps stores comments as rich text and supports both plain text and basic HTML formatting (div, br, nbsp, span, lists, etc.).</param>
+    /// <param name="comment">The comment content to add in basic HTML format (p, br, b, i, u, ul, li, etc.).</param>
     /// <returns>JSON object with the created comment ID and URL</returns>
     [McpServerTool(Name = "wit_add_work_item_comment")]
     [Description("Adds a comment to a work item in Azure DevOps. Comments can include HTML formatting such as div, br, nbsp, spans, lists, and other basic HTML elements.")]
@@ -99,7 +99,7 @@ public class WorkItemTools
     /// <param name="project">The Azure DevOps project name or ID</param>
     /// <param name="workItemId">The numeric work item ID</param>
     /// <param name="commentId">The ID of the comment to update</param>
-    /// <param name="text">The updated comment content. Azure DevOps stores comments as rich text and supports both plain text and basic HTML formatting (div, br, nbsp, span, lists, etc.).</param>
+    /// <param name="text">The updated comment content in basic HTML format (p, br, b, i, u, ul, li, etc.).</param>
     /// <returns>JSON object with the updated comment details</returns>
     [McpServerTool(Name = "wit_update_work_item_comment")]
     [Description("Updates an existing comment on a work item in Azure DevOps. Comments can include HTML formatting such as div, br, nbsp, spans, lists, and other basic HTML elements.")]
@@ -132,7 +132,7 @@ public class WorkItemTools
     /// <param name="project">The Azure DevOps project name or ID</param>
     /// <param name="workItemType">The work item type (e.g., "Task", "Bug", "User Story")</param>
     /// <param name="title">The work item title</param>
-    /// <param name="description">The work item description (optional)</param>
+    /// <param name="description">(optional) The work item description in basic HTML format (p, br, b, i, u, ul, li, etc.).</param>
     /// <returns>JSON object with the created work item ID, title, type, and URL</returns>
     [McpServerTool(Name = "wit_work_item_write_create")]
     [Description("Creates a new work item in an Azure DevOps project with a specified type, title, and optional description. Returns the work item ID, URL, and confirmation details.")]
